@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>专注打卡 · 10 分钟正念</title>
+<style>
+:root{--bg:#0f1115;--card:#171a21;--card2:#1f242e;--line:#2b3140;--tx:#e9edf5;--muted:#98a2b3;--accent:#5ad1c0;--accent2:#8b8cf0;--warn:#f0a35a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:#0f1115;background-image:radial-gradient(900px 520px at 50% -15%,#1c2330 0%,rgba(15,17,21,0) 70%);background-repeat:no-repeat;color:var(--tx);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;padding:18px 16px 56px}
+body.locked{overflow:hidden}
+#app{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.hidden{display:none!important}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+h1{font-size:20px;margin:0;letter-spacing:.6px}
+h2{font-size:14px;margin:0 0 10px;font-weight:600;letter-spacing:.4px;color:#cfd6e4}
+.sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.muted{color:var(--muted);font-size:13.5px;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
+.stat b{display:block;font-size:22px;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat span{font-size:11.5px;color:var(--muted)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;border-radius:12px}
+.primary{display:block;width:100%;padding:15px;margin:12px 0 10px;font-size:16.5px;font-weight:600;background:linear-gradient(135deg,#4ec9b8,#5ad1c0 40%,#6fa8f5);color:#07231f;box-shadow:0 8px 24px rgba(90,209,192,.18)}
+.primary:active{transform:translateY(1px)}
+.ghost{background:var(--card2);border:1px solid var(--line);padding:10px 12px;font-size:13.5px;color:#d5dbe8}
+.ghost:active{background:#252b37}
+.row{display:flex;gap:10px}
+.row.gap>.ghost{flex:1}
+.icon{width:38px;height:38px;background:var(--card2);border:1px solid var(--line);font-size:17px;line-height:1;color:#cfd6e4}
+.badge{display:inline-block;margin-top:10px;padding:6px 10px;border-radius:999px;font-size:12.5px;background:rgba(90,209,192,.12);color:var(--accent);border:1px solid rgba(90,209,192,.35)}
+.gridwrap{display:flex;gap:8px}
+.dow{display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:var(--muted);padding:2px 0}
+.grid{flex:1;display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:5px}
+.cell{aspect-ratio:1;background:var(--card2);border:1px solid var(--line);border-radius:7px;padding:0}
+.cell.half{background:#243a3a;border-color:#2f5150}
+.cell.aux{background:#20242e}
+.cell.on{background:linear-gradient(135deg,#3fbfae,#57d0c0);border-color:#5ad1c0}
+.cell.today{outline:2px solid #8b8cf0;outline-offset:1px}
+.cell.future{opacity:.35}
+.legend{display:flex;gap:14px;margin-top:10px;font-size:11.5px;color:var(--muted);align-items:center;flex-wrap:wrap}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.stage-tag{display:inline-block;font-size:12px;padding:4px 9px;border-radius:8px;background:rgba(139,140,240,.14);color:#b7b8f7;border:1px solid rgba(139,140,240,.3);margin-bottom:8px}
+.note{font-size:13.5px;color:#cbd3e1;margin:8px 0 0;white-space:pre-wrap}
+.kv{display:flex;gap:12px;font-size:14px;margin:0 0 8px}
+.kv b{color:var(--muted);font-weight:500;flex:0 0 86px}
+.overlay{position:fixed;inset:0;background:rgba(8,10,14,.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.sheet{width:100%;max-width:460px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;max-height:92vh;overflow:auto}
+.sheet h2{font-size:16px;color:var(--tx)}
+label.field{display:block;margin:12px 0 0;font-size:13px;color:var(--muted)}
+input[type=number],textarea{width:100%;margin-top:6px;padding:11px 12px;font:inherit;color:var(--tx);background:var(--card2);border:1px solid var(--line);border-radius:11px}
+textarea{min-height:64px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid rgba(90,209,192,.45);outline-offset:0}
+.rate{display:flex;gap:8px;margin-top:8px}
+.rate button{flex:1;padding:9px 0;background:var(--card2);border:1px solid var(--line);font-size:14px}
+.rate button.sel{background:rgba(90,209,192,.18);border-color:var(--accent);color:var(--accent);font-weight:600}
+.actions{display:flex;gap:10px;margin-top:16px}
+.actions button{flex:1;padding:13px;font-size:15px;font-weight:600;border-radius:12px}
+.actions .ok{background:var(--accent);color:#06231f}
+.actions .no{background:var(--card2);border:1px solid var(--line);color:#cfd6e4}
+#practice{position:fixed;inset:0;z-index:60;background:#0b0d11;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:6px}
+.ringwrap{position:relative;width:230px;height:230px;display:flex;align-items:center;justify-content:center}
+.ringwrap svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ringwrap .center{position:relative;text-align:center}
+#pTime{font-size:40px;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:1px}
+#pPhase{font-size:15px;color:var(--accent);margin-top:2px}
+#pHint{max-width:420px;text-align:center;font-size:13.5px;color:#9aa3b2;margin:16px 0 0;min-height:46px;line-height:1.5}
+#pWanderBtn{margin-top:16px;padding:16px 26px;font-size:16px;font-weight:600;border-radius:16px;background:rgba(240,163,90,.14);border:1px solid rgba(240,163,90,.4);color:#f0a35a}
+#pWanderBtn:active{background:rgba(240,163,90,.28)}
+.pctl{display:flex;gap:10px;margin-top:14px}
+.pctl button{padding:10px 16px;font-size:13.5px;background:#1a1f28;border:1px solid #2b3140;color:#c6cddb}
+.pquit{position:absolute;top:14px;left:14px;font-size:13px;color:#7d8798;padding:8px 10px}
+#pacer{position:fixed;inset:0;z-index:70;background:rgba(8,10,14,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+.pacecircle{width:200px;height:200px;border-radius:50%;transform:scale(.7);background:radial-gradient(circle at 50% 40%,rgba(90,209,192,.5),rgba(90,209,192,.12) 65%,rgba(90,209,192,0));transition:transform .12s linear}
+#paceLabel{font-size:16px;color:var(--accent)}
+.stopstep{display:flex;gap:10px;margin:0 0 10px;font-size:14px;line-height:1.5}
+.stopstep b{color:var(--accent2);flex:0 0 22px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#252b37;color:#e9edf5;padding:10px 16px;border-radius:999px;font-size:13.5px;border:1px solid var(--line);z-index:99;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+footer{text-align:center;font-size:11.5px;color:#5e6675;margin-top:6px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <h1>专注打卡</h1>
+      <div class="sub" id="todayLabel"></div>
+    </div>
+    <button class="icon" id="settingsBtn" title="设置">&#9881;</button>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><b id="stStreak">0</b><span>连续天数</span></div>
+    <div class="stat"><b id="stTotal">0</b><span>累计达标天</span></div>
+    <div class="stat"><b id="stWander">0</b><span>累计走神</span></div>
+  </section>
+
+  <section class="card">
+    <h2>今日练习</h2>
+    <p class="muted">坐下，感受鼻尖的呼吸；走神了就拉回来。走神次数越多，说明练得越到位。</p>
+    <button class="primary" id="startBtn">开始 10 分钟</button>
+    <div class="row gap">
+      <button class="ghost" id="breath3Btn">三口呼吸 · 30 秒</button>
+      <button class="ghost" id="stopBtn">STOP 法</button>
+    </div>
+    <div class="badge hidden" id="doneBadge">今天已达标 ✓</div>
+  </section>
+
+  <section class="card">
+    <h2>8 周记录</h2>
+    <div class="gridwrap">
+      <div class="dow"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="legend">
+      <span><i class="dot" style="background:linear-gradient(135deg,#3fbfae,#57d0c0)"></i>达标</span>
+      <span><i class="dot" style="background:#243a3a"></i>练了但不足 5 分钟</span>
+      <span><i class="dot" style="background:#20242e"></i>只做了短练习</span>
+      <span>点格子可查看 / 补记</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>当前阶段</h2>
+    <div class="stage-tag" id="stageTag">第 1-2 周</div>
+    <p class="muted" id="stageTxt"></p>
+    <p class="muted" id="stageDay" style="margin-top:8px"></p>
+  </section>
+
+  <section class="card">
+    <h2>数据</h2>
+    <div class="row gap" style="margin-bottom:10px">
+      <button class="ghost" id="expCsv">导出 CSV</button>
+      <button class="ghost" id="expJson">导出 JSON</button>
+    </div>
+    <div class="row gap">
+      <button class="ghost" id="impBtn">导入 JSON</button>
+      <button class="ghost" id="clearBtn">清空数据</button>
+    </div>
+    <input type="file" id="impFile" accept=".json,application/json" class="hidden">
+  </section>
+  <footer>数据只存在这台设备的浏览器里 · 建议每周导出一次备份</footer>
+</div>
+
+<div id="practice" class="hidden">
+  <button class="pquit" id="pQuit">&#8592; 放弃</button>
+  <div class="ringwrap">
+    <svg viewBox="0 0 230 230" width="230" height="230">
+      <circle cx="115" cy="115" r="70" fill="none" stroke="#20242e" stroke-width="10"></circle>
+      <circle id="pRing" cx="115" cy="115" r="70" fill="none" stroke="#5ad1c0" stroke-width="10" stroke-linecap="round" stroke-dasharray="439.82" stroke-dashoffset="0"></circle>
+    </svg>
+    <div class="center">
+      <div id="pTime">10:00</div>
+      <div id="pPhase">准备</div>
+    </div>
+  </div>
+  <p id="pHint"></p>
+  <button id="pWanderBtn">我走神了 · <span id="pWander">0</span></button>
+  <div class="pctl">
+    <button id="pPause">暂停</button>
+    <button id="pEnd">结束并记录</button>
+  </div>
+</div>
+
+<div id="pacer" class="hidden">
+  <div class="pacecircle" id="paceCircle"></div>
+  <div id="paceLabel">准备</div>
+  <button class="ghost" id="paceDone">结束</button>
+</div>
+
+<div id="stopPanel" class="overlay hidden">
+  <div class="sheet">
+    <h2>STOP 法 · 30 秒</h2>
+    <p class="muted" style="margin-bottom:14px">被打断之后、开会之前、想刷手机时用。做完再回到手上那件事。</p>
+    <div class="stopstep"><b>S</b><span>停下 —— 别再点下一步，手离开鼠标和手机。</span></div>
+    <div class="stopstep"><b>T</b><span>呼吸 —— 一次有觉察的呼吸，知道自己在吸气。</span></div>
+    <div class="stopstep"><b>O</b><span>观察 —— 身体紧吗？刚才在想什么？给它一个词。</span></div>
+    <div class="stopstep"><b>P</b><span>继续 —— 回到那件事的下一个具体动作。</span></div>
+    <div class="actions"><button class="ok" id="stopClose">好，继续</button></div>
+  </div>
+</div>
+
+<div id="log" class="overlay hidden">
+  <div class="sheet">
+    <h2 id="logTitle">记录</h2>
+    <label class="field">实际时长（分钟）
+      <input type="number" id="lMin" min="0" max="180" step="1" inputmode="numeric">
+    </label>
+    <label class="field">走神次数
+      <input type="number" id="lWander" min="0" max="999" step="1" inputmode="numeric">
+    </label>
+    <label class="field">今天的状态（1 差 — 5 好）
+      <div class="rate" id="rateRow">
+        <button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button>
+      </div>
+    </label>
+    <label class="field">一句话备注
+      <textarea id="lNote" placeholder="例：上午练的，前 3 分钟特别躁"></textarea>
+    </label>
+    <div class="actions">
+      <button class="no" id="logCancel">取消</button>
+      <button class="ok" id="logSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="detail" class="overlay hidden">
+  <div class="sheet">
+    <h2 id="detailTitle">日期</h2>
+    <div id="detailBody"></div>
+    <div class="actions">
+      <button class="no" id="dDel">删除</button>
+      <button class="ok" id="dEdit">编辑 / 补记</button>
+    </div>
+  </div>
+</div>
+
+<div id="settings" class="overlay hidden">
+  <div class="sheet">
+    <h2>设置</h2>
+    <label class="field">每日目标时长（分钟）
+      <input type="number" id="sGoal" min="5" max="60" step="1" inputmode="numeric">
+    </label>
+    <label class="field" style="display:flex;align-items:center;gap:10px;margin-top:18px">
+      <input type="checkbox" id="sSound" style="width:18px;height:18px">
+      <span>阶段切换提示音</span>
+    </label>
+    <div class="actions">
+      <button class="no" id="setCancel">取消</button>
+      <button class="ok" id="setSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+  var KEY='mindful_checkin_v1';
+  var NL=String.fromCharCode(10);
+  var BOM=String.fromCharCode(65279);
+  var DAY=86400000;
+  var THRESH=5;
+  var CIRC=439.82;
+
+  function pad(n){return n<10?('0'+n):(''+n);}
+  function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function parseYmd(s){var p=String(s).split('-');return new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));}
+  function shiftDay(d,n){var x=new Date(d.getTime());x.setDate(x.getDate()+n);return x;}
+  function todayKey(){return ymd(new Date());}
+  function daysBetween(a,b){return Math.round((parseYmd(b).getTime()-parseYmd(a).getTime())/DAY);}
+  function $(id){return document.getElementById(id);}
+  function el(tag,cls,txt){var e=document.createElement(tag);if(cls){e.className=cls;}if(txt!=null){e.textContent=txt;}return e;}
+  var toastTimer=0;
+  function toast(msg){var t=$('toast');t.textContent=msg;t.className='toast show';if(toastTimer){clearTimeout(toastTimer);}toastTimer=setTimeout(function(){t.className='toast';},2200);}
+
+  function load(){
+    var s=null;
+    try{s=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){s=null;}
+    if(!s||typeof s!=='object'){s={};}
+    if(!s.days||typeof s.days!=='object'){s.days={};}
+    if(!Number(s.goal)){s.goal=10;}
+    if(!s.settings||typeof s.settings!=='object'){s.settings={sound:true};}
+    if(typeof s.settings.sound!=='boolean'){s.settings.sound=true;}
+    if(!s.startDate){
+      var ks=Object.keys(s.days).sort();
+      s.startDate=ks.length?ks[0]:todayKey();
+    }
+    return s;
+  }
+  var state=load();
+  function save(){
+    try{localStorage.setItem(KEY,JSON.stringify(state));}
+    catch(e){toast('保存失败：本地存储不可用');}
+  }
+
+  function qualifies(k){var r=state.days[k];return !!(r&&Number(r.min||0)>=THRESH);}
+  function hasEntry(k){return !!state.days[k];}
+  function streak(){
+    var d=new Date();
+    if(!qualifies(ymd(d))){d=shiftDay(d,-1);}
+    var n=0;
+    while(qualifies(ymd(d))){n++;d=shiftDay(d,-1);}
+    return n;
+  }
+
+  function makeDetail(k){return function(){openDetail(k);};}
+  function renderGrid(){
+    var g=$('grid');g.innerHTML='';
+    var tK=todayKey();
+    var now=new Date();
+    var dow=(now.getDay()+6)%7;
+    var start=shiftDay(shiftDay(now,-dow),-49);
+    for(var i=0;i<8;i++){
+      for(var j=0;j<7;j++){
+        var key=ymd(shiftDay(start,i*7+j));
+        var b=el('button','cell');
+        b.type='button';
+        if(key>tK){b.className='cell future';}
+        else if(qualifies(key)){b.className='cell on';}
+        else{
+          var r=state.days[key];
+          if(r&&Number(r.min||0)>0){b.className='cell half';}
+          else if(r){b.className='cell aux';}
+          else{b.className='cell';}
+        }
+        if(key===tK){b.className=b.className+' today';}
+        b.title=key;
+        b.onclick=makeDetail(key);
+        g.appendChild(b);
+      }
+    }
+  }
+  function renderStage(){
+    var dd=daysBetween(state.startDate,todayKey());
+    if(dd<0){dd=0;}
+    var w=Math.floor(dd/7)+1;
+    var tag,txt;
+    if(w<=2){tag='第 1-2 周';txt='无聊、走神到怀疑人生、想放弃 —— 这阶段几乎没有主观收益，纯靠流程坚持。最常见的放弃点就在这里，撑过去。';}
+    else if(w<=4){tag='第 3-4 周';txt='开始能注意到「我刚才在走神」，觉察延迟从几分钟缩到几十秒。';}
+    else if(w<=8){tag='第 5-8 周';txt='日常里能捕捉到分心并主动拉回。研究上持续注意的改善主要出现在这个阶段。';}
+    else{tag='第 8 周以后';txt='维持剂量：每周 3-4 次即可保持，重点转到日常的三口呼吸与 STOP 法。';}
+    $('stageTag').textContent=tag;
+    $('stageTxt').textContent=txt;
+    $('stageDay').textContent='今天是第 '+(dd+1)+' 天 · 目标每天 '+(Number(state.goal)||10)+' 分钟';
+  }
+  function render(){
+    var t=todayKey();
+    var keys=Object.keys(state.days);
+    var total=0,wander=0;
+    for(var i=0;i<keys.length;i++){
+      var r=state.days[keys[i]]||{};
+      if(Number(r.min||0)>=THRESH){total++;}
+      wander+=Number(r.wander||0);
+    }
+    $('stStreak').textContent=String(streak());
+    $('stTotal').textContent=String(total);
+    $('stWander').textContent=String(wander);
+    var d=new Date();
+    $('todayLabel').textContent=d.getFullYear()+' 年 '+(d.getMonth()+1)+' 月 '+d.getDate()+' 日';
+    $('doneBadge').className=qualifies(t)?'badge':'badge hidden';
+    $('startBtn').textContent=(hasEntry(t)?'再练一次':'开始 '+(Number(state.goal)||10)+' 分钟');
+    renderGrid();
+    renderStage();
+  }
+  function hideOverlay(id){
+    $(id).classList.add('hidden');
+    if(!document.querySelector('.overlay:not(.hidden)')&&$('practice').classList.contains('hidden')){
+      document.body.classList.remove('locked');
+    }
+  }
+
+  var AC=null;
+  function startAudio(){
+    if(!state.settings.sound){return;}
+    try{
+      if(!AC){var C=window.AudioContext||window.webkitAudioContext;if(C){AC=new C();}}
+      if(AC&&AC.state==='suspended'){AC.resume();}
+    }catch(e){}
+  }
+  function chime(freq,dur,vol){
+    if(!state.settings.sound||!AC){return;}
+    try{
+      var o=AC.createOscillator(),g=AC.createGain();
+      o.type='sine';o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001,AC.currentTime);
+      g.gain.exponentialRampToValueAtTime(vol||0.05,AC.currentTime+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+(dur||0.5));
+      o.connect(g);g.connect(AC.destination);
+      o.start();o.stop(AC.currentTime+(dur||0.5)+0.03);
+    }catch(e){}
+  }
+  function buzz(){try{if(navigator.vibrate){navigator.vibrate(12);}}catch(e){}}
+  var W={lock:null};
+  function requestWake(){
+    try{
+      if('wakeLock' in navigator){
+        navigator.wakeLock.request('screen').then(function(l){W.lock=l;})['catch'](function(){});
+      }
+    }catch(e){}
+  }
+  function releaseWake(){try{if(W.lock){W.lock.release();W.lock=null;}}catch(e){}}
+
+  var PHASES=[
+    [0,'准备','坐正，脚踩地，背自然直。三次深呼吸：吸 4 秒，呼 6 秒'],
+    [30,'数呼吸','心里默数：吸…1，呼…1，数到 10 再回到 1。丢了数就直接回来'],
+    [180,'只感受鼻尖','不再数数。只观察空气进出：凉、温、细、粗，不控制节奏'],
+    [300,'拉回练习','走神一定会发生。每次发现就点一下「我走神了」，然后回到鼻尖'],
+    [420,'身体扫描','脚、腿、手、肩、脸，一处停 5 秒，只感受那里的感觉'],
+    [540,'回到鼻尖','最后 1 分钟，只管呼吸']
+  ];
+  var P={total:600,acc:0,t0:0,running:false,wander:0,timer:0,lastPhase:-1};
+  function elapsedMs(){return P.acc+(P.running?(Date.now()-P.t0):0);}
+  function tick(force){
+    var sec=elapsedMs()/1000;
+    if(sec>=P.total){finishPractice(P.total);return;}
+    var rem=P.total-sec;
+    $('pTime').textContent=Math.floor(rem/60)+':'+pad(Math.floor(rem%60));
+    $('pRing').style.strokeDashoffset=(CIRC*(1-sec/P.total)).toFixed(1);
+    var idx=0;
+    for(var i=0;i<PHASES.length;i++){if(sec>=PHASES[i][0]){idx=i;}}
+    if(idx!==P.lastPhase){
+      P.lastPhase=idx;
+      $('pPhase').textContent=PHASES[idx][1];
+      $('pHint').textContent=PHASES[idx][2];
+      if(!force){chime(660,0.35,0.05);}
+    }
+  }
+  function startPractice(){
+    P.total=(Number(state.goal)||10)*60;
+    P.acc=0;P.wander=0;P.running=true;P.t0=Date.now();P.lastPhase=-1;
+    $('pWander').textContent='0';
+    $('pPause').textContent='暂停';
+    $('pRing').style.strokeDashoffset='0';
+    $('practice').classList.remove('hidden');
+    document.body.classList.add('locked');
+    startAudio();requestWake();
+    tick(true);
+    if(P.timer){clearInterval(P.timer);}
+    P.timer=setInterval(function(){tick(false);},200);
+  }
+  function stopTimer(){if(P.timer){clearInterval(P.timer);P.timer=0;}}
+  function togglePause(){
+    if(P.running){P.acc=elapsedMs();P.running=false;$('pPause').textContent='继续';}
+    else{P.t0=Date.now();P.running=true;$('pPause').textContent='暂停';}
+  }
+  function addWander(){P.wander++;$('pWander').textContent=String(P.wander);buzz();}
+  function finishPractice(maxSec){
+    stopTimer();
+    var sec=Math.min(maxSec,elapsedMs()/1000);
+    P.running=false;
+    var mins=Math.max(1,Math.round(sec/60));
+    var w=P.wander;
+    $('practice').classList.add('hidden');
+    releaseWake();
+    chime(784,0.8,0.06);
+    openLog({add:true,min:mins,wander:w});
+  }
+  function quitPractice(){
+    if(!confirm('放弃这次练习？本次时长不会记录。')){return;}
+    stopTimer();P.running=false;
+    $('practice').classList.add('hidden');
+    releaseWake();
+    if(!document.querySelector('.overlay:not(.hidden)')){document.body.classList.remove('locked');}
+  }
+
+  var pace={timer:0,t0:0};
+  function startPacer(){
+    startAudio();
+    $('pacer').classList.remove('hidden');
+    $('paceLabel').textContent='准备';
+    pace.t0=Date.now();
+    if(pace.timer){clearInterval(pace.timer);}
+    pace.timer=setInterval(function(){
+      var t=(Date.now()-pace.t0)/1000;
+      if(t>=30){stopPacer(true);return;}
+      var c=t%10,s,lab;
+      if(c<4){s=0.55+0.45*(c/4);lab='吸气';}
+      else{s=1-0.45*((c-4)/6);lab='呼气';}
+      $('paceCircle').style.transform='scale('+s.toFixed(3)+')';
+      $('paceLabel').textContent=lab+' · 第 '+(Math.floor(t/10)+1)+' / 3 次';
+    },60);
+  }
+  function stopPacer(record){
+    if(pace.timer){clearInterval(pace.timer);pace.timer=0;}
+    $('paceCircle').style.transform='scale(.7)';
+    $('pacer').classList.add('hidden');
+    if(record){
+      var key=todayKey();
+      var rec=state.days[key]||{min:0,wander:0,rating:0,note:''};
+      rec.breath3=(Number(rec.breath3)||0)+1;
+      state.days[key]=rec;
+      if(key<state.startDate){state.startDate=key;}
+      save();render();
+      toast('三口呼吸完成 · 记一次');
+    }
+  }
+
+  var logCtx={key:null,add:false};
+  var logRating=3;
+  function paintRating(){
+    var bs=$('rateRow').getElementsByTagName('button');
+    for(var i=0;i<bs.length;i++){
+      if(Number(bs[i].getAttribute('data-v'))===logRating){bs[i].className='sel';}
+      else{bs[i].className='';}
+    }
+  }
+  function openLog(pre){
+    pre=pre||{};
+    logCtx.key=pre.key||todayKey();
+    logCtx.add=!!pre.add;
+    var rec=state.days[logCtx.key]||{};
+    if(pre.add){
+      $('lMin').value=String(Math.round((Number(rec.min)||0)+Number(pre.min||0)));
+      $('lWander').value=String(Math.round((Number(rec.wander)||0)+Number(pre.wander||0)));
+    }else{
+      $('lMin').value=String(pre.min!=null?pre.min:(rec.min!=null?rec.min:(Number(state.goal)||10)));
+      $('lWander').value=String(pre.wander!=null?pre.wander:(Number(rec.wander)||0));
+    }
+    logRating=Number(rec.rating)||3;
+    paintRating();
+    $('lNote').value=rec.note||'';
+    $('logTitle').textContent=(pre.add?'本次已完成 · ':'记录 / 补记 ')+logCtx.key;
+    $('log').classList.remove('hidden');
+    document.body.classList.add('locked');
+  }
+  function saveLog(){
+    var key=logCtx.key||todayKey();
+    var min=Math.max(0,Math.round(Number($('lMin').value)||0));
+    var w=Math.max(0,Math.round(Number($('lWander').value)||0));
+    var rec=state.days[key]||{};
+    rec.min=min;rec.wander=w;rec.rating=logRating;rec.note=String($('lNote').value).slice(0,300);
+    state.days[key]=rec;
+    if(key<state.startDate){state.startDate=key;}
+    save();hideOverlay('log');render();
+    toast(min>0?('已记录 '+min+' 分钟 · 走神 '+w+' 次'):'已记录');
+  }
+
+  function openDetail(key){
+    var rec=state.days[key];
+    var body=$('detailBody');body.innerHTML='';
+    if(!rec){
+      body.appendChild(el('p','muted','这天没有记录。可以点「编辑 / 补记」手动加一笔。'));
+    }else{
+      var lines=[['时长',(Number(rec.min)||0)+' 分钟'],['走神次数',String(Number(rec.wander)||0)],['状态',(rec.rating?rec.rating+' / 5':'-')],['三口呼吸',String(Number(rec.breath3)||0)+' 次']];
+      for(var i=0;i<lines.length;i++){
+        var row=el('div','kv');
+        row.appendChild(el('b',null,lines[i][0]));
+        row.appendChild(el('span',null,lines[i][1]));
+        body.appendChild(row);
+      }
+      if(rec.note){body.appendChild(el('p','note',rec.note));}
+    }
+    $('detailTitle').textContent=key;
+    $('dDel').style.display=rec?'':'none';
+    $('dDel').onclick=function(){
+      if(!confirm('删除 '+key+' 的记录？')){return;}
+      delete state.days[key];save();hideOverlay('detail');render();toast('已删除');
+    };
+    $('dEdit').onclick=function(){hideOverlay('detail');openLog({key:key});};
+    $('detail').classList.remove('hidden');
+    document.body.classList.add('locked');
+  }
+
+  function openSettings(){
+    $('sGoal').value=String(Number(state.goal)||10);
+    $('sSound').checked=!!state.settings.sound;
+    $('settings').classList.remove('hidden');
+    document.body.classList.add('locked');
+  }
+  function saveSettings(){
+    var g=Math.round(Number($('sGoal').value)||10);
+    if(g<5){g=5;}
+    if(g>60){g=60;}
+    state.goal=g;
+    state.settings.sound=!!$('sSound').checked;
+    save();hideOverlay('settings');render();toast('设置已保存');
+  }
+
+  function download(name,text,mime){
+    try{ if(window.AndroidSave){ window.AndroidSave.save(name,text); return; } }catch(e){}
+    var blob=new Blob([text],{type:(mime||'text/plain')+';charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download=name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){
+      if(a.parentNode){a.parentNode.removeChild(a);}
+      URL.revokeObjectURL(url);
+    },1500);
+  }
+  function exportCsv(){
+    var keys=Object.keys(state.days).sort();
+    var rows=['日期,时长(分钟),走神次数,状态(1-5),三口呼吸,备注'];
+    for(var i=0;i<keys.length;i++){
+      var k=keys[i],r=state.days[k]||{};
+      var note=String(r.note||'').split('"').join('""');
+      rows.push([k,Number(r.min)||0,Number(r.wander)||0,Number(r.rating)||0,Number(r.breath3)||0,'"'+note+'"'].join(','));
+    }
+    download('focus-checkin-'+todayKey()+'.csv',BOM+rows.join(NL),'text/csv');
+    toast('已导出 CSV（可用 Excel 打开）');
+  }
+  function exportJson(){
+    download('focus-checkin-'+todayKey()+'.json',JSON.stringify(state,null,2),'application/json');
+    toast('已导出 JSON 备份');
+  }
+  function importJson(file){
+    var fr=new FileReader();
+    fr.onload=function(){
+      var data=null;
+      try{data=JSON.parse(String(fr.result));}catch(e){toast('不是有效的 JSON 文件');return;}
+      if(!data||typeof data!=='object'||!data.days){toast('文件里没有 days 数据');return;}
+      if(!confirm('导入会合并记录（同一天以文件为准），继续？')){return;}
+      var ks=Object.keys(data.days);
+      for(var i=0;i<ks.length;i++){state.days[ks[i]]=data.days[ks[i]];}
+      if(Number(data.goal)){state.goal=Number(data.goal);}
+      var all=Object.keys(state.days).sort();
+      if(all.length){state.startDate=all[0];}
+      save();render();
+      toast('已导入 '+ks.length+' 条记录');
+    };
+    fr.readAsText(file);
+  }
+  function clearAll(){
+    if(!confirm('清空全部打卡记录？此操作不可撤销（建议先导出备份）。')){return;}
+    if(!confirm('再确认一次：真的要清空吗？')){return;}
+    state={days:{},goal:Number(state.goal)||10,settings:state.settings,startDate:todayKey()};
+    save();render();toast('已清空');
+  }
+
+  function init(){
+    $('startBtn').onclick=startPractice;
+    $('pWanderBtn').onclick=addWander;
+    $('pPause').onclick=togglePause;
+    $('pEnd').onclick=function(){finishPractice(elapsedMs()/1000);};
+    $('pQuit').onclick=quitPractice;
+    $('breath3Btn').onclick=startPacer;
+    $('paceDone').onclick=function(){stopPacer(false);};
+    $('stopBtn').onclick=function(){$('stopPanel').classList.remove('hidden');document.body.classList.add('locked');};
+    $('stopClose').onclick=function(){hideOverlay('stopPanel');};
+    $('logCancel').onclick=function(){hideOverlay('log');};
+    $('logSave').onclick=saveLog;
+    $('rateRow').onclick=function(ev){
+      var t=ev.target;
+      var v=t&&t.getAttribute?t.getAttribute('data-v'):null;
+      if(v){logRating=Number(v);paintRating();}
+    };
+    $('settingsBtn').onclick=openSettings;
+    $('setCancel').onclick=function(){hideOverlay('settings');};
+    $('setSave').onclick=saveSettings;
+    $('expCsv').onclick=exportCsv;
+    $('expJson').onclick=exportJson;
+    $('impBtn').onclick=function(){$('impFile').click();};
+    $('impFile').onchange=function(){var f=this.files&&this.files[0];if(f){importJson(f);}this.value='';};
+    $('clearBtn').onclick=clearAll;
+    document.addEventListener('keydown',function(ev){
+      if(ev.code==='Space'&&!$('practice').classList.contains('hidden')){
+        ev.preventDefault();addWander();
+      }
+    });
+    document.addEventListener('visibilitychange',function(){
+      if(document.visibilityState==='visible'&&!$('practice').classList.contains('hidden')){requestWake();}
+    });
+    render();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
